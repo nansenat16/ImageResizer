@@ -22,8 +22,15 @@ namespace ImageResizer
             sw.Start();
             imageProcess.ResizeImages(sourcePath, destinationPath, 2.0);
             sw.Stop();
+            
+            Console.WriteLine($"ync: {sw.ElapsedMilliseconds} ms");
 
-            Console.WriteLine($"花費時間: {sw.ElapsedMilliseconds} ms");
+            sw.Reset();
+            sw.Start();
+            imageProcess.ResizeImagesAsync(sourcePath, destinationPath, 2.0);
+            sw.Stop();
+            
+            Console.WriteLine($"Async: {sw.ElapsedMilliseconds} ms");
         }
     }
 }
