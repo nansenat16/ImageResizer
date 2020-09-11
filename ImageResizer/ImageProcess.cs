@@ -67,7 +67,7 @@ namespace ImageResizer
             }
         }
         
-        public void ResizeImagesAsync(string sourcePath, string destPath, double scale)
+        public void ResizeImagesAsync(string sourcePath, string destPath, double scale,CancellationToken cts)
         {
             var allFiles = FindImages(sourcePath);
             Task[] tasks = new Task[allFiles.Count];
@@ -76,13 +76,13 @@ namespace ImageResizer
             foreach (var filePath in allFiles)
             {
                 //Console.WriteLine(String.Format("Main: {0:D2}", Thread.CurrentThread.ManagedThreadId));
-                tasks[job++] = Task.Run(() => ResizeAsync(filePath, destPath, scale));
+                tasks[job++] = Task.Run(() => ResizeAsync(filePath, destPath, scale, cts));
             }
 
             Task.WaitAll(tasks);
         }
 
-        public async Task ResizeAsync(string filePath, string destPath, double scale)
+        public async Task ResizeAsync(string filePath, string destPath, double scale, CancellationToken cts)
         {
             //Console.WriteLine(String.Format("Async: {0:D2}", Thread.CurrentThread.ManagedThreadId));
             Image imgPhoto = Image.FromFile(filePath);
@@ -94,11 +94,12 @@ namespace ImageResizer
             int destionatonWidth = (int)(sourceWidth * scale);
             int destionatonHeight = (int)(sourceHeight * scale);
 
+            cts.ThrowIfCancellationRequested();
             var image = await Task.FromResult(processBitmap((Bitmap)imgPhoto,
                 sourceWidth, sourceHeight,
                 destionatonWidth, destionatonHeight));
-             
-             string destFile = Path.Combine(destPath, imgName + ".jpg");
+
+            string destFile = Path.Combine(destPath, imgName + ".jpg");
              image.Save(destFile, ImageFormat.Jpeg);
         }
 
